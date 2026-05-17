@@ -1,0 +1,1730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>STACK — AI Lead Gen, Installed.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;700&family=Kalam:wght@300;400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── tokens ── */
+    :root {
+      --paper:    #f4ecdf;
+      --paper-2:  #ebe1cf;
+      --bg:       #d8cab0;
+      --ink:      #2a221c;
+      --ink-2:    #4a3a2c;
+      --ink-faint:#8a7a68;
+      --rule:     #c9b89c;
+      --accent:   #d96a3a;
+      --accent-2: #2f7a6a;
+      --mono: 'JetBrains Mono', monospace;
+      --hand: 'Kalam', 'Caveat', cursive;
+      --bold: 'Caveat', cursive;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+    body {
+      background: var(--bg);
+      font-family: var(--hand);
+      color: var(--ink);
+      min-height: 100vh;
+      /* room for sticky bottom bar on mobile */
+      padding-bottom: 64px;
+    }
+
+    @media (min-width: 768px) { body { padding-bottom: 0; } }
+
+    /* ── paper page ── */
+    .page {
+      max-width: 1280px;
+      margin: 0 auto;
+      background: var(--paper);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* paper grain */
+    .page::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        radial-gradient(circle at 30% 40%, rgba(0,0,0,.025) .5px, transparent 1px),
+        radial-gradient(circle at 70% 60%, rgba(0,0,0,.02)  .5px, transparent 1px),
+        radial-gradient(circle at 50% 80%, rgba(0,0,0,.02)  .5px, transparent 1px);
+      background-size: 23px 23px, 31px 31px, 17px 17px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ════════════════════════════════════════
+       NAV
+    ════════════════════════════════════════ */
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      border-bottom: 1px dashed var(--rule);
+      position: sticky; top: 0;
+      background: rgba(244,236,223,.92);
+      backdrop-filter: blur(10px);
+      z-index: 200;
+    }
+
+    .nav-brand {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .nav-hex {
+      width: 24px; height: 24px;
+      border: 1.6px solid var(--ink);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+    }
+    .nav-name {
+      font-family: var(--mono);
+      font-weight: 700; font-size: 13px; letter-spacing: 2.5px;
+    }
+
+    /* desktop links — hidden on mobile */
+    .nav-links {
+      display: none;
+      gap: 26px;
+      font-family: var(--mono);
+      font-size: 10.5px; letter-spacing: 1.5px;
+    }
+    .nav-links a { color: var(--ink-2); text-decoration: none; transition: color .15s; }
+    .nav-links a:hover { color: var(--ink); }
+
+    @media (min-width: 768px) {
+      .nav { padding: 14px 32px; }
+      .nav-links { display: flex; }
+      .nav-hamburger { display: none !important; }
+    }
+
+    /* hamburger */
+    .nav-hamburger {
+      width: 36px; height: 36px;
+      border: 1.5px solid var(--ink);
+      border-radius: 8px;
+      background: transparent;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ── DRAWER ── */
+    .drawer-overlay {
+      position: fixed; inset: 0;
+      background: rgba(20,16,12,.52);
+      z-index: 500;
+      opacity: 0; pointer-events: none;
+      transition: opacity .22s;
+    }
+    .drawer-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .drawer {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: 80%; max-width: 300px;
+      background: var(--paper);
+      border-right: 2px solid var(--ink);
+      padding: 20px 18px 20px;
+      display: flex; flex-direction: column;
+      transform: translateX(-100%);
+      transition: transform .24s ease;
+      z-index: 501;
+    }
+    .drawer.open { transform: translateX(0); }
+
+    .drawer-top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .drawer-close {
+      width: 30px; height: 30px;
+      border: 1.4px solid var(--ink);
+      border-radius: 50%;
+      background: transparent;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .drawer-links a {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 15px 4px;
+      border-bottom: 1px dashed var(--rule);
+      font-family: var(--bold);
+      font-size: 22px; font-weight: 700;
+      color: var(--ink); text-decoration: none;
+    }
+    .drawer-links a span { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); }
+    .drawer-footer { margin-top: auto; }
+    .drawer-spot {
+      font-family: var(--mono); font-size: 9px;
+      color: var(--ink-2); letter-spacing: 1.4px;
+      margin-bottom: 10px;
+    }
+
+    /* ════════════════════════════════════════
+       GLASS BUTTON
+    ════════════════════════════════════════ */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 0 20px; height: 44px; /* ≥44px touch target */
+      border-radius: 999px;
+      border: 1.6px solid var(--ink);
+      background: rgba(255,255,255,.55);
+      color: var(--ink);
+      font-family: var(--hand); font-size: 14px; letter-spacing: .3px;
+      cursor: pointer; position: relative; overflow: hidden;
+      text-decoration: none; white-space: nowrap;
+      box-shadow: inset 0 1.5px 0 rgba(255,255,255,.7), 0 1px 0 rgba(0,0,0,.05);
+      transition: transform .12s, box-shadow .12s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn::before { /* inner meniscus ring */
+      content: ''; position: absolute; inset: 2px;
+      border-radius: 999px;
+      border: .8px solid rgba(0,0,0,.18);
+      pointer-events: none;
+    }
+    .btn::after { /* dome highlight */
+      content: ''; position: absolute;
+      top: 3px; left: 12%; right: 12%; height: 42%;
+      background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.9), transparent 70%);
+      border-radius: 999px; pointer-events: none;
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: inset 0 1.5px 0 rgba(255,255,255,.7), 0 6px 16px rgba(0,0,0,.12); }
+    .btn:active { transform: translateY(0); }
+
+    .btn.dark { background: var(--ink); color: var(--paper); }
+    .btn.dark::after { background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.18), transparent 70%); }
+
+    .btn.lg { height: 52px; padding: 0 34px; font-size: 16px; }
+    .btn.full { width: 100%; }
+
+    @media (min-width: 768px) { .btn { height: 38px; font-size: 13px; } .btn.lg { height: 52px; font-size: 16px; } }
+
+    /* ════════════════════════════════════════
+       BIG TYPE
+    ════════════════════════════════════════ */
+    .big {
+      font-family: var(--bold); font-weight: 700;
+      text-transform: uppercase; line-height: .92;
+      letter-spacing: -.04em; color: var(--ink);
+    }
+
+    /* ════════════════════════════════════════
+       HERO — MOBILE (stacked: photo above type)
+    ════════════════════════════════════════ */
+    .hero { padding: 18px 18px 0; }
+
+    /* eyebrow */
+    .eyebrow {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 2.5px;
+      color: var(--accent); text-transform: uppercase;
+      display: inline-flex; align-items: center; gap: 7px;
+      margin-bottom: 10px;
+    }
+    .eyebrow::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 3px rgba(217,106,58,.18);
+    }
+
+    /* mobile hero headline */
+    .hero-headline {
+      font-family: var(--bold); font-weight: 700;
+      font-size: 38px; line-height: .93;
+      letter-spacing: -.03em; text-transform: uppercase;
+    }
+
+    .hi { color: var(--accent); }
+
+    .hero-body {
+      font-family: var(--hand); font-size: 13px;
+      color: var(--ink-2); line-height: 1.45; margin-top: 10px;
+    }
+
+    /* mobile hero photo */
+    .hero-photo-mob {
+      width: 100%; height: 200px;
+      border: 1.8px solid var(--ink);
+      border-radius: 8px; overflow: hidden;
+      background: var(--paper-2);
+      position: relative; margin: 14px 0;
+    }
+    .hero-photo-mob img {
+      width: 100%; height: 100%; object-fit: cover;
+      filter: grayscale(.65) contrast(1.06) sepia(.15) brightness(1.04);
+      mix-blend-mode: multiply; opacity: .82;
+    }
+    .hero-photo-mob::before {
+      content: ''; position: absolute; inset: 0;
+      background: repeating-linear-gradient(45deg, transparent 0 7px, rgba(42,34,28,.055) 7px 8px, transparent 8px 14px);
+      mix-blend-mode: multiply; pointer-events: none; z-index: 1;
+    }
+    .photo-label {
+      position: absolute; left: 8px; bottom: 7px;
+      font-family: var(--mono); font-size: 8px; color: var(--ink);
+      background: rgba(244,236,223,.92);
+      padding: 2px 7px; border-radius: 3px;
+      border: 1px solid var(--ink); letter-spacing: 1.1px;
+      text-transform: uppercase; z-index: 2;
+    }
+
+    /* mobile hero CTAs */
+    .hero-ctas {
+      display: flex; flex-direction: column; gap: 8px;
+      margin-top: 14px;
+    }
+
+    /* ── mobile stat strip (3-col) ── */
+    .stats-mob {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 8px; margin-top: 14px;
+    }
+    .stat {
+      padding: 10px 12px;
+      border: 1.8px solid var(--ink);
+      border-radius: 10px 14px 9px 13px / 12px 10px 14px 9px;
+      background: rgba(255,255,255,.55);
+      box-shadow: inset 0 1.5px 0 rgba(255,255,255,.55);
+    }
+    .stat-n { font-family: var(--bold); font-size: 22px; font-weight: 700; line-height: 1; }
+    .stat-l { font-family: var(--hand); font-size: 10px; color: var(--ink-faint); margin-top: 2px; }
+
+    /* ── DESKTOP HERO (editorial wordmark) ── */
+    .hero-desktop { display: none; }
+
+    @media (min-width: 768px) {
+      .hero { padding: 18px 32px 0; }
+      .hero-mobile  { display: none; }
+      .hero-desktop { display: block; }
+
+      .hero-r1 {
+        display: flex; align-items: flex-start;
+        justify-content: space-between; gap: 16px;
+      }
+      .hero-edition {
+        font-family: var(--mono); font-size: 10px;
+        letter-spacing: 1.5px; color: var(--ink-2);
+        line-height: 1.7; padding-top: 10px; flex-shrink: 0;
+      }
+      .hero-w1 {
+        font-size: clamp(72px, 11.5vw, 148px);
+        margin-top: -8px; flex: 1; text-align: center;
+      }
+      .hero-thumb {
+        width: 172px; height: 120px;
+        border: 1.8px solid var(--ink);
+        border-radius: 8px; overflow: hidden;
+        background: var(--paper-2);
+        position: relative; flex-shrink: 0;
+      }
+      .hero-thumb img {
+        width: 100%; height: 100%; object-fit: cover;
+        filter: grayscale(.7) contrast(1.05) sepia(.18) brightness(1.04);
+        mix-blend-mode: multiply; opacity: .78;
+      }
+      .hero-thumb::after {
+        content: 'THE TEAM';
+        position: absolute; left: 7px; bottom: 6px;
+        font-family: var(--mono); font-size: 8px; color: var(--ink);
+        background: rgba(244,236,223,.92);
+        padding: 2px 7px; border-radius: 3px;
+        border: 1px solid var(--ink); letter-spacing: 1.2px;
+      }
+      .hero-r2 {
+        display: flex; align-items: flex-end;
+        justify-content: space-between;
+        margin-top: -14px; gap: 16px;
+      }
+      .hero-desc {
+        font-family: var(--hand); font-size: 13px;
+        color: var(--ink-2); max-width: 220px;
+        line-height: 1.45; padding-bottom: 36px; flex-shrink: 0;
+      }
+      .hero-w2 {
+        font-size: clamp(90px, 16.5vw, 214px);
+        letter-spacing: -.05em; margin-right: -10px;
+        text-align: right; flex: 1;
+      }
+
+      /* desktop stat strip (4-col) */
+      .stats-mob { display: none; }
+      .stats-desk {
+        display: grid; grid-template-columns: repeat(4,1fr);
+        gap: 16px; padding: 32px 32px 0;
+      }
+      .stats-desk .stat { padding: 14px 18px; }
+      .stats-desk .stat-n { font-size: 30px; }
+      .stats-desk .stat-l { font-size: 11.5px; }
+    }
+
+    /* ════════════════════════════════════════
+       HERO PHOTO (desktop — full-bleed with HUD)
+    ════════════════════════════════════════ */
+    .photo-wrap { padding: 28px 18px 0; position: relative; }
+
+    @media (min-width: 768px) { .photo-wrap { padding: 32px 32px 0; } }
+
+    .photo-frame {
+      position: relative; width: 100%; height: 300px;
+      border: 1.8px solid var(--ink);
+      border-radius: 10px 14px 12px 10px / 12px 10px 14px 12px;
+      overflow: hidden; background: var(--paper-2);
+    }
+    @media (min-width: 768px) { .photo-frame { height: 440px; } }
+
+    .photo-frame > img {
+      width: 100%; height: 100%; object-fit: cover;
+      filter: grayscale(.65) contrast(1.06) sepia(.15) brightness(1.04);
+      mix-blend-mode: multiply; opacity: .82;
+    }
+    .photo-frame::before {
+      content: ''; position: absolute; inset: 0;
+      background: repeating-linear-gradient(45deg, transparent 0 7px, rgba(42,34,28,.055) 7px 8px, transparent 8px 14px);
+      mix-blend-mode: multiply; pointer-events: none; z-index: 1;
+    }
+    .photo-frame .photo-label {
+      position: absolute; left: 10px; bottom: 9px; z-index: 2;
+      font-family: var(--mono); font-size: 9px; color: var(--ink);
+      background: rgba(244,236,223,.92);
+      padding: 2px 8px; border-radius: 3px;
+      border: 1px solid var(--ink); letter-spacing: 1.2px; text-transform: uppercase;
+    }
+
+    /* floating CTA cluster — only desktop */
+    .photo-cta {
+      display: none;
+      position: absolute; left: 40px; bottom: 34px;
+      gap: 10px; align-items: center; z-index: 2;
+    }
+    @media (min-width: 768px) { .photo-cta { display: flex; } }
+
+    .play-btn {
+      width: 52px; height: 52px; border-radius: 50%;
+      border: 1.6px solid var(--ink);
+      background: rgba(255,255,255,.6);
+      box-shadow: inset 0 1.5px 0 rgba(255,255,255,.6);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; cursor: pointer; flex-shrink: 0;
+      transition: transform .12s;
+    }
+    .play-btn:hover { transform: scale(1.06); }
+
+    /* HUD spec card — desktop only */
+    .hud-card {
+      display: none;
+      position: absolute; top: 34px; right: 44px;
+      width: 210px;
+      background: rgba(255,255,255,.55);
+      border: 1.6px solid var(--ink); border-radius: 14px;
+      padding: 14px;
+      box-shadow: inset 0 1.5px 0 rgba(255,255,255,.65);
+      backdrop-filter: blur(4px); z-index: 2;
+    }
+    .hud-card::before {
+      content: ''; position: absolute; inset: 3px;
+      border-radius: 11px; border: .8px solid rgba(0,0,0,.14);
+      pointer-events: none;
+    }
+    @media (min-width: 768px) { .hud-card { display: block; } }
+
+    .hud-live { font-family: var(--mono); font-size: 9px; letter-spacing: 1.8px; color: var(--accent); }
+    .hud-head { font-family: var(--bold); font-size: 24px; font-weight: 700; margin-top: 4px; line-height: 1.1; }
+    .hud-sub  { font-family: var(--hand); font-size: 10.5px; color: var(--ink-faint); margin-top: 3px; }
+
+    /* ════════════════════════════════════════
+       PITCH
+    ════════════════════════════════════════ */
+    .pitch {
+      padding: 36px 18px 0;
+    }
+    .pitch-head {
+      font-size: clamp(30px,8vw,60px); line-height: .95;
+    }
+    .pitch-aside {
+      font-family: var(--hand); font-size: 13.5px;
+      color: var(--ink-2); line-height: 1.5;
+      margin-top: 16px;
+    }
+    @media (min-width: 768px) {
+      .pitch {
+        padding: 56px 32px 0;
+        display: grid; grid-template-columns: 1fr 290px;
+        gap: 32px; align-items: flex-end;
+      }
+      .pitch-aside { margin-top: 0; font-size: 14px; }
+      .pitch-head { font-size: clamp(38px,4.6vw,60px); }
+    }
+
+    /* ════════════════════════════════════════
+       THE STACK
+    ════════════════════════════════════════ */
+    .stack {
+      margin-top: 48px; padding: 32px 18px;
+      background: var(--paper-2);
+      border-top: 1px dashed var(--rule);
+      border-bottom: 1px dashed var(--rule);
+    }
+    @media (min-width: 768px) { .stack { padding: 36px 32px; } }
+
+    .stack-hdr { margin-bottom: 20px; }
+    .stack-title { font-size: clamp(30px,4vw,58px); line-height: .95; }
+    .stack-sub {
+      font-family: var(--hand); font-size: 13.5px;
+      color: var(--ink-2); line-height: 1.5;
+      margin-top: 12px; max-width: 680px;
+    }
+    @media (min-width: 768px) {
+      .stack-hdr { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
+      .stack-sub  { margin-top: 0; max-width: 390px; }
+    }
+
+    /* 2×2 on mobile → 4-col on desktop */
+    .stack-grid {
+      display: grid; grid-template-columns: repeat(2,1fr); gap: 12px;
+    }
+    @media (min-width: 768px) {
+      .stack-grid { grid-template-columns: repeat(4,1fr); gap: 14px; }
+    }
+
+    .stack-tile {
+      padding: 14px 14px 44px;
+      background: rgba(255,255,255,.55);
+      border: 1.6px solid var(--ink);
+      border-radius: 12px 16px 11px 14px / 14px 12px 16px 11px;
+      box-shadow: inset 0 1.5px 0 rgba(255,255,255,.6);
+      position: relative; transition: transform .14s;
+    }
+    .stack-tile:hover { transform: translateY(-2px); }
+
+    .tile-num  { font-family: var(--mono); font-size: 10px; letter-spacing: 1.6px; }
+    .tile-name { font-family: var(--bold); font-size: 24px; font-weight: 700; margin-top: 6px; line-height: 1; }
+    .tile-desc { font-family: var(--hand); font-size: 12px; margin-top: 6px; color: var(--ink-2); line-height: 1.35; }
+    .tile-arrow {
+      position: absolute; right: 12px; bottom: 12px;
+      width: 30px; height: 30px; border-radius: 50%;
+      border: 1.4px solid var(--ink);
+      background: rgba(255,255,255,.6);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      box-shadow: inset 0 1.2px 0 rgba(255,255,255,.65);
+    }
+
+    /* ════════════════════════════════════════
+       PROOF STRIP
+    ════════════════════════════════════════ */
+    .proof {
+      padding: 36px 18px 0;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    @media (min-width: 768px) {
+      .proof { padding: 48px 32px 0; flex-direction: row; }
+    }
+    .proof-tile {
+      flex: 1; padding: 16px;
+      border: 1.8px solid var(--ink);
+      border-radius: 9px 13px 11px 14px / 13px 11px 10px 12px;
+      background: rgba(255,255,255,.5);
+      box-shadow: inset 0 1.5px 0 rgba(255,255,255,.55);
+    }
+    .proof-key { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; color: var(--accent-2); }
+    .proof-val { font-family: var(--bold); font-size: 18px; font-weight: 700; margin-top: 6px; line-height: 1.2; }
+
+    /* ════════════════════════════════════════
+       APPLY CTA
+    ════════════════════════════════════════ */
+    .apply { padding: 56px 18px 60px; text-align: center; }
+    @media (min-width: 768px) { .apply { padding: 68px 32px 72px; } }
+
+    .apply-title { font-size: clamp(44px,7vw,92px); line-height: .93; }
+    .apply-note {
+      font-family: var(--hand); font-size: 14px;
+      color: var(--ink-2); margin-top: 14px;
+      max-width: 480px; margin-left: auto; margin-right: auto;
+      line-height: 1.5;
+    }
+    .apply-btns {
+      display: flex; flex-direction: column; gap: 10px;
+      margin-top: 24px;
+    }
+    @media (min-width: 480px) {
+      .apply-btns { flex-direction: row; justify-content: center; }
+    }
+
+    /* ════════════════════════════════════════
+       FOOTER
+    ════════════════════════════════════════ */
+    .footer {
+      padding: 24px 18px;
+      border-top: 1px dashed var(--rule);
+      background: var(--paper-2);
+    }
+    @media (min-width: 768px) {
+      .footer {
+        padding: 28px 32px;
+        display: flex; justify-content: space-between; align-items: flex-end;
+      }
+    }
+
+    .footer-brand { font-family: var(--bold); font-size: 32px; font-weight: 700; letter-spacing: 1px; }
+    .footer-copy  { font-family: var(--mono); font-size: 9px; color: var(--ink-2); letter-spacing: 1.2px; margin-top: 4px; }
+
+    .footer-cols {
+      display: flex; gap: 28px; margin-top: 20px;
+    }
+    @media (min-width: 768px) { .footer-cols { margin-top: 0; } }
+
+    .footer-col h4 { font-family: var(--mono); font-size: 9px; letter-spacing: 1.8px; color: var(--ink); margin-bottom: 8px; }
+    .footer-col p  { font-family: var(--mono); font-size: 9px; color: var(--ink-2); letter-spacing: 1.1px; margin: 4px 0; }
+
+    /* ════════════════════════════════════════
+       STICKY BOTTOM BAR (mobile ≤ 768)
+    ════════════════════════════════════════ */
+    .bottom-bar {
+      position: fixed; left: 0; right: 0; bottom: 0;
+      background: rgba(244,236,223,.94);
+      backdrop-filter: blur(8px);
+      border-top: 1.5px solid var(--ink);
+      padding: 10px 16px;
+      display: flex; gap: 10px; align-items: center;
+      z-index: 300;
+    }
+    .bottom-bar-spot {
+      font-family: var(--mono); font-size: 10px;
+      letter-spacing: 1.2px; color: var(--ink-2); flex: 1;
+    }
+    .bottom-bar-spot b { color: var(--accent); }
+    @media (min-width: 768px) { .bottom-bar { display: none; } }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ════════ NAV ════════ -->
+  <nav class="nav">
+    <div class="nav-brand">
+      <div class="nav-hex">⬢</div>
+      <span class="nav-name">STACK</span>
+    </div>
+    <div class="nav-links">
+      <a href="#stack">THE STACK</a>
+      <a href="#proof">WHY</a>
+      <a href="#proof">PROCESS</a>
+      <a href="#proof">PROOF</a>
+      <a href="#apply">FAQ</a>
+    </div>
+    <a href="#apply" class="btn dark" style="display:none;" id="nav-cta-desk">APPLY FOR INSTALL</a>
+    <button class="nav-hamburger" id="hamburger-btn" aria-label="Open menu">≡</button>
+  </nav>
+
+  <!-- ════════ DRAWER ════════ -->
+  <div class="drawer-overlay" id="drawer-overlay"></div>
+  <div class="drawer" id="drawer" role="dialog" aria-label="Navigation">
+    <div class="drawer-top">
+      <div class="nav-brand">
+        <div class="nav-hex">⬢</div>
+        <span class="nav-name">STACK</span>
+      </div>
+      <button class="drawer-close" id="drawer-close" aria-label="Close menu">✕</button>
+    </div>
+    <nav class="drawer-links">
+      <a href="#stack">THE STACK <span>01</span></a>
+      <a href="#proof">PROCESS <span>02</span></a>
+      <a href="#proof">PROOF <span>03</span></a>
+      <a href="#proof">TEAM <span>04</span></a>
+      <a href="#apply">FAQ <span>05</span></a>
+    </nav>
+    <div class="drawer-footer">
+      <div class="drawer-spot">● 3 / 3 SPOTS · MARCH</div>
+      <a href="#apply" class="btn dark full">APPLY FOR INSTALL →</a>
+      <div style="margin-top:12px; font-family:var(--mono); font-size:9px; color:var(--ink-faint); letter-spacing:1.3px;">
+        login · privacy · terms
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ HERO — MOBILE ════════ -->
+  <section class="hero hero-mobile">
+    <div class="eyebrow">3 INSTALL SPOTS · MARCH '26</div>
+    <h1 class="hero-headline">
+      LEAD GEN,<br>REBUILT<br><span class="hi">WITH AI.</span>
+    </h1>
+    <p class="hero-body">
+      funnels, CRM, voice, content, ad creative — one stack, installed in 14 days.
+    </p>
+    <div class="hero-photo-mob">
+      <img src="uploads/put_all_three_of_us_in_a_space_Nano_Banana_Pro_61778.png" alt="The crew" />
+      <div class="photo-label">WE INSTALL · YOU WATCH IT RUN</div>
+    </div>
+    <div class="hero-ctas">
+      <a href="#apply" class="btn dark full">APPLY FOR AN INSTALL SPOT →</a>
+      <a href="#stack" class="btn full">WATCH IT RUN ▷</a>
+    </div>
+    <div class="stats-mob">
+      <div class="stat"><div class="stat-n">10</div><div class="stat-l">dials</div></div>
+      <div class="stat"><div class="stat-n">1.2s</div><div class="stat-l">latency</div></div>
+      <div class="stat"><div class="stat-n">14d</div><div class="stat-l">live</div></div>
+    </div>
+  </section>
+
+  <!-- ════════ HERO — DESKTOP (editorial wordmark) ════════ -->
+  <section class="hero hero-desktop">
+    <div class="hero-r1">
+      <div class="hero-edition">
+        ‖‖‖ ‖ ‖‖‖ ‖<br>
+        INSTALL · 03 OF 03<br>
+        EDITION · MARCH '26
+      </div>
+      <div class="big hero-w1">LEAD GEN</div>
+      <div class="hero-thumb">
+        <img src="uploads/put_all_three_of_us_in_a_space_Nano_Banana_Pro_63947.png" alt="The Team" />
+      </div>
+    </div>
+    <div class="hero-r2">
+      <div class="hero-desc">
+        we combine<br>lead gen with<br>modern AI.<br>
+        ↳ funnels, CRM,<br>voice, content,<br>ad creative — one stack.
+      </div>
+      <div class="big hero-w2">·MACHINE</div>
+    </div>
+  </section>
+
+  <!-- ════════ HERO PHOTO (shared, desktop HUD overlays) ════════ -->
+  <div class="photo-wrap">
+    <div class="photo-frame">
+      <img src="uploads/put_all_three_of_us_in_a_space_Nano_Banana_Pro_61778.png" alt="We Install, You Watch It Run" />
+      <div class="photo-label">WE INSTALL · YOU WATCH IT RUN</div>
+
+      <!-- desktop-only: floating CTA cluster -->
+      <div class="photo-cta">
+        <a href="#apply" class="btn dark lg">APPLY FOR AN INSTALL SPOT →</a>
+        <div class="play-btn">▷</div>
+      </div>
+
+      <!-- desktop-only: cockpit HUD card -->
+      <div class="hud-card">
+        <div class="hud-live">● 3 INSTALLS · MARCH</div>
+        <div class="hud-head">then the<br>list closes.</div>
+        <div class="hud-sub">we go dark to ship v2.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ STATS — DESKTOP 4-col ════════ -->
+  <div class="stats-desk">
+    <div class="stat"><div class="stat-n">10</div><div class="stat-l">concurrent dials</div></div>
+    <div class="stat"><div class="stat-n">1.2s</div><div class="stat-l">voice latency</div></div>
+    <div class="stat"><div class="stat-n">14 days</div><div class="stat-l">install → live</div></div>
+    <div class="stat"><div class="stat-n">3 / mo</div><div class="stat-l">install spots</div></div>
+  </div>
+
+  <!-- ════════ PITCH ════════ -->
+  <div class="pitch">
+    <div class="big pitch-head">
+      YOU DON'T<br>RUN LEAD GEN.<br>
+      <span class="hi">YOU WATCH IT RUN.</span>
+    </div>
+    <div class="pitch-aside">
+      most agencies sell you one piece.
+      <span class="hi">↳ we install the whole stack —</span>
+      capture, contact, content, creative — into your business.
+    </div>
+  </div>
+
+  <!-- ════════ THE STACK ════════ -->
+  <section class="stack" id="stack">
+    <div class="stack-hdr">
+      <div class="big stack-title">FOUR LAYERS.<br>ONE SYSTEM.</div>
+      <div class="stack-sub">
+        built to compound. every layer feeds the next: capture funnels the lead,
+        contact dials it, content earns the trust, creative refills the hook.
+      </div>
+    </div>
+    <div class="stack-grid">
+      <div class="stack-tile">
+        <div class="tile-num" style="color:var(--accent)">01 / 04</div>
+        <div class="tile-name">CAPTURE</div>
+        <div class="tile-desc">Funnels. CRM.<br>AI Dashboards.</div>
+        <div class="tile-arrow">→</div>
+      </div>
+      <div class="stack-tile">
+        <div class="tile-num" style="color:var(--accent-2)">02 / 04</div>
+        <div class="tile-name">CONTACT</div>
+        <div class="tile-desc">Voice. SMS.<br>Email. Chat.</div>
+        <div class="tile-arrow">→</div>
+      </div>
+      <div class="stack-tile">
+        <div class="tile-num" style="color:#0c8fa3">03 / 04</div>
+        <div class="tile-name">CONTENT</div>
+        <div class="tile-desc">Social. Avatars.<br>Daily reach.</div>
+        <div class="tile-arrow">→</div>
+      </div>
+      <div class="stack-tile">
+        <div class="tile-num" style="color:#7a55c2">04 / 04</div>
+        <div class="tile-name">CREATIVE</div>
+        <div class="tile-desc">Carousels. Ads.<br>Quote cards.</div>
+        <div class="tile-arrow">→</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ PROOF ════════ -->
+  <div class="proof" id="proof">
+    <div class="proof-tile">
+      <div class="proof-key">CAPTURE</div>
+      <div class="proof-val">funnels file every lead into your CRM, live.</div>
+    </div>
+    <div class="proof-tile">
+      <div class="proof-key">CONTACT</div>
+      <div class="proof-val">voice agent dials 10 leads, sub-1.5s latency.</div>
+    </div>
+    <div class="proof-tile">
+      <div class="proof-key">COMPOUND</div>
+      <div class="proof-val">every objection trains the KB. every booking retargets.</div>
+    </div>
+  </div>
+
+  <!-- ════════ APPLY CTA ════════ -->
+  <section class="apply" id="apply">
+    <div class="eyebrow">3 INSTALL SPOTS · MARCH '26</div>
+    <div class="big apply-title">
+      APPLY IN<br><span class="hi">90 SECONDS.</span>
+    </div>
+    <p class="apply-note">
+      tell us what you're running now — funnels, CRM, ad spend, dial volume.
+      five questions. no calendar tag.
+    </p>
+    <div class="apply-btns">
+      <a href="#" class="btn dark lg">APPLY FOR AN INSTALL SPOT →</a>
+      <a href="#stack" class="btn lg">SEE THE STACK</a>
+    </div>
+  </section>
+
+  <!-- ════════ FOOTER ════════ -->
+  <footer class="footer">
+    <div>
+      <div class="footer-brand">STACK</div>
+      <div class="footer-copy">© 2026 · MISSION CONTROL</div>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <h4>PRODUCT</h4>
+        <p>The Stack</p><p>Apply</p><p>Proof</p>
+      </div>
+      <div class="footer-col">
+        <h4>CO.</h4>
+        <p>Team</p><p>Process</p><p>FAQ</p>
+      </div>
+      <div class="footer-col">
+        <h4>SOCIAL</h4>
+        <p>Twitter / X</p><p>LinkedIn</p><p>YouTube</p>
+      </div>
+    </div>
+  </footer>
+
+</div><!-- /page -->
+
+<!-- ════════ STICKY BOTTOM BAR (mobile) ════════ -->
+<div class="bottom-bar">
+  <div class="bottom-bar-spot"><b>●</b> 3 / 3 SPOTS</div>
+  <a href="#apply" class="btn dark" style="flex:1; text-align:center;">APPLY →</a>
+</div>
+
+<!-- ════════════════════════════════════════
+     APPLY SURVEY MODAL
+════════════════════════════════════════ -->
+<style>
+  /* ── modal overlay ── */
+  .survey-overlay {
+    position: fixed; inset: 0;
+    background: rgba(20,16,12,.62);
+    z-index: 900;
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+    opacity: 0; pointer-events: none;
+    transition: opacity .22s;
+  }
+  .survey-overlay.open { opacity: 1; pointer-events: auto; }
+
+  /* ── modal card ── */
+  .survey-card {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 16px 20px 16px 18px / 18px 16px 20px 16px;
+    width: 100%; max-width: 520px;
+    max-height: 90vh; overflow-y: auto;
+    position: relative;
+    box-shadow: 6px 6px 0 rgba(42,34,28,.14);
+    transform: translateY(12px);
+    transition: transform .24s ease;
+  }
+  .survey-overlay.open .survey-card { transform: translateY(0); }
+
+  /* paper grain inside modal */
+  .survey-card::before {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+      radial-gradient(circle at 30% 40%, rgba(0,0,0,.022) .5px, transparent 1px),
+      radial-gradient(circle at 70% 60%, rgba(0,0,0,.018) .5px, transparent 1px);
+    background-size: 23px 23px, 31px 31px;
+    pointer-events: none; border-radius: inherit;
+  }
+
+  /* ── survey header ── */
+  .survey-hdr {
+    padding: 16px 18px 12px;
+    border-bottom: 1px dashed var(--rule);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .survey-step-label {
+    font-family: var(--mono); font-size: 9px;
+    letter-spacing: 1.8px; color: var(--accent);
+    white-space: nowrap;
+  }
+  .survey-progress {
+    flex: 1; height: 4px;
+    border: 1px solid var(--ink); border-radius: 999px;
+    background: rgba(255,255,255,.5); position: relative;
+    overflow: hidden;
+  }
+  .survey-progress-fill {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    background: var(--ink); border-radius: 999px;
+    transition: width .3s ease;
+  }
+  .survey-close {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 1.4px solid var(--ink);
+    background: transparent;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; cursor: pointer; flex-shrink: 0;
+    font-family: var(--mono); color: var(--ink);
+    transition: background .12s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .survey-close:hover { background: rgba(0,0,0,.06); }
+
+  /* ── survey body ── */
+  .survey-body { padding: 22px 20px 16px; position: relative; z-index: 1; }
+
+  .survey-q-label {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 1.6px; color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .survey-question {
+    font-family: var(--bold); font-weight: 700;
+    font-size: 26px; line-height: 1.05;
+    letter-spacing: -.02em;
+  }
+  .survey-hint {
+    font-family: var(--hand); font-size: 12px;
+    color: var(--ink-faint); margin-top: 5px;
+  }
+
+  /* ── PILLS ── */
+  .survey-pills {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-top: 18px;
+  }
+  .survey-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 0 14px; height: 40px; border-radius: 999px;
+    border: 1.5px solid var(--ink);
+    background: rgba(255,255,255,.55);
+    color: var(--ink);
+    font-family: var(--hand); font-size: 13px;
+    cursor: pointer;
+    box-shadow: inset 0 1.2px 0 rgba(255,255,255,.65);
+    transition: background .12s, color .12s, transform .1s;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .survey-pill:hover { transform: translateY(-1px); }
+  .survey-pill.selected {
+    background: var(--ink); color: var(--paper);
+    box-shadow: none;
+  }
+  .survey-pill .check { display: none; font-size: 11px; }
+  .survey-pill.selected .check { display: inline; }
+
+  /* ── SLIDER ── */
+  .survey-slider-wrap { margin-top: 24px; }
+  .survey-slider-track {
+    position: relative; height: 8px;
+    border: 1.4px solid var(--ink); border-radius: 999px;
+    background: rgba(255,255,255,.6);
+  }
+  .survey-slider-fill {
+    position: absolute; left: 0; top: -1px; bottom: -1px;
+    background: var(--accent); border-radius: 999px;
+    opacity: .65; pointer-events: none;
+    transition: width .08s;
+  }
+  .survey-slider-thumb {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 26px; height: 26px; border-radius: 50%;
+    background: rgba(255,255,255,.9);
+    border: 1.8px solid var(--ink);
+    box-shadow: inset 0 1.2px 0 rgba(255,255,255,.7), 0 2px 6px rgba(0,0,0,.18);
+    cursor: grab; pointer-events: none;
+    transition: left .08s;
+  }
+  input[type=range].survey-range {
+    position: absolute; inset: 0; width: 100%;
+    opacity: 0; cursor: pointer; height: 100%;
+    margin: 0;
+  }
+  .survey-slider-labels {
+    display: flex; justify-content: space-between;
+    margin-top: 10px;
+    font-family: var(--mono); font-size: 9px; color: var(--ink-2);
+  }
+  .survey-slider-val {
+    text-align: center; margin-top: 10px;
+    font-family: var(--bold); font-size: 30px; font-weight: 700;
+    color: var(--ink);
+  }
+
+  /* ── INPUTS ── */
+  .survey-inputs { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
+  .survey-input-wrap { display: flex; flex-direction: column; gap: 4px; }
+  .survey-input-label {
+    font-family: var(--mono); font-size: 9px;
+    letter-spacing: 1.4px; color: var(--ink-2);
+  }
+  .survey-input {
+    height: 46px; border-radius: 8px;
+    border: 1.6px solid var(--ink);
+    background: rgba(255,255,255,.55);
+    padding: 0 14px;
+    font-family: var(--hand); font-size: 15px; color: var(--ink);
+    box-shadow: inset 0 1.5px 0 rgba(255,255,255,.6);
+    outline: none; transition: border-color .15s;
+    width: 100%;
+  }
+  .survey-input:focus { border-color: var(--accent); }
+  .survey-input::placeholder { color: var(--ink-faint); }
+
+  /* ── ANSWERS RECEIPT ── */
+  .answers-receipt {
+    margin-top: 14px; padding: 10px 12px;
+    border: 1px dashed var(--ink); border-radius: 8px;
+    background: rgba(255,255,255,.4);
+    display: none;
+  }
+  .answers-receipt.visible { display: block; }
+  .receipt-label {
+    font-family: var(--mono); font-size: 9px;
+    letter-spacing: 1.4px; color: var(--accent-2);
+    margin-bottom: 6px;
+  }
+  .receipt-row {
+    font-family: var(--hand); font-size: 12px;
+    color: var(--ink-2); line-height: 1.6;
+  }
+  .receipt-row b { color: var(--ink); }
+
+  /* ── FOOTER NAV ── */
+  .survey-footer {
+    padding: 12px 20px 18px;
+    display: flex; align-items: center; gap: 10px;
+    border-top: 1px dashed var(--rule);
+    position: relative; z-index: 1;
+  }
+  .survey-back {
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 1.5px solid var(--ink);
+    background: rgba(255,255,255,.55);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; cursor: pointer; flex-shrink: 0;
+    box-shadow: inset 0 1.2px 0 rgba(255,255,255,.65);
+    transition: opacity .12s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .survey-back.hidden { opacity: 0; pointer-events: none; }
+  .survey-next {
+    flex: 1; height: 46px; border-radius: 999px;
+    border: 1.6px solid var(--ink);
+    background: var(--ink); color: var(--paper);
+    font-family: var(--hand); font-size: 15px; letter-spacing: .3px;
+    cursor: pointer; position: relative; overflow: hidden;
+    box-shadow: inset 0 1.5px 0 rgba(255,255,255,.18);
+    transition: transform .12s, box-shadow .12s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .survey-next:hover { transform: translateY(-1px); box-shadow: inset 0 1.5px 0 rgba(255,255,255,.18), 0 6px 16px rgba(0,0,0,.2); }
+  .survey-next:active { transform: translateY(0); }
+  .survey-next::after {
+    content: ''; position: absolute;
+    top: 3px; left: 10%; right: 10%; height: 38%;
+    background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.2), transparent 70%);
+    border-radius: 999px; pointer-events: none;
+  }
+
+  /* ══════════════════════════
+     TICKET CONFIRMATION
+  ══════════════════════════ */
+  .ticket-wrap { padding: 20px 18px 24px; position: relative; z-index: 1; }
+
+  .ticket-eyebrow {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 2.5px; color: var(--accent-2);
+    display: inline-flex; align-items: center; gap: 7px;
+    margin-bottom: 8px;
+  }
+  .ticket-eyebrow::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent-2);
+    box-shadow: 0 0 0 3px rgba(47,122,106,.18);
+  }
+
+  .ticket-headline {
+    font-family: var(--bold); font-weight: 700;
+    font-size: clamp(32px,7vw,52px); line-height: .9;
+    letter-spacing: -.03em; text-transform: uppercase;
+  }
+  .ticket-sub {
+    font-family: var(--hand); font-size: 13px;
+    color: var(--ink-2); line-height: 1.45; margin-top: 8px;
+    max-width: 400px;
+  }
+
+  /* the artifact ticket */
+  .ticket {
+    margin-top: 20px; position: relative;
+    background: var(--paper-2);
+    border: 2.4px solid var(--ink); border-radius: 12px;
+    box-shadow: inset 0 1.5px 0 rgba(255,255,255,.55), 3px 3px 0 rgba(42,34,28,.1);
+    display: flex; min-height: 240px;
+    overflow: visible;
+  }
+  /* notch circles on perforation */
+  .ticket::before, .ticket::after {
+    content: ''; position: absolute;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--paper); border: 2.4px solid var(--ink);
+    left: calc(65% - 9px); z-index: 2;
+  }
+  .ticket::before { top: -9px; }
+  .ticket::after  { bottom: -9px; }
+
+  .ticket-main {
+    flex: 0 0 65%; padding: 16px 18px 50px; position: relative; overflow: hidden;
+  }
+  /* watermark */
+  .ticket-main::before {
+    content: ''; position: absolute; inset: 0;
+    background: var(--paper-2);
+    opacity: .5;
+  }
+  .ticket-hdr {
+    display: flex; justify-content: space-between;
+    font-family: var(--mono); font-size: 9px;
+    letter-spacing: 1.6px; color: var(--ink-2);
+    position: relative; z-index: 1;
+  }
+  /* ADMITTED stamp */
+  .ticket-stamp {
+    position: absolute; top: 28px; right: 14px;
+    padding: 5px 14px;
+    border: 2.5px solid var(--accent); color: var(--accent);
+    transform: rotate(-13deg);
+    font-family: var(--mono); font-weight: 700;
+    font-size: 18px; letter-spacing: 3px;
+    background: rgba(217,106,58,.08); border-radius: 5px;
+    pointer-events: none; z-index: 2;
+  }
+  .ticket-stamp small {
+    display: block; font-size: 8px; letter-spacing: 1.5px; font-weight: 400; text-align: center;
+  }
+  .ticket-applicant {
+    margin-top: 12px; position: relative; z-index: 1;
+  }
+  .ticket-applicant .tl { font-family: var(--mono); font-size: 9px; letter-spacing: 1.4px; color: var(--ink-faint); }
+  .ticket-applicant .tn { font-family: var(--bold); font-size: 26px; font-weight: 700; line-height: 1; margin-top: 2px; }
+
+  .ticket-divider {
+    border: none; border-top: 1.5px dashed var(--ink);
+    opacity: .45; margin: 12px 0;
+    position: relative; z-index: 1;
+  }
+  .ticket-grid {
+    display: grid; grid-template-columns: repeat(2,1fr);
+    gap: 10px; position: relative; z-index: 1;
+  }
+  @media (min-width: 400px) { .ticket-grid { grid-template-columns: repeat(4,1fr); } }
+  .ticket-cell .tk { font-family: var(--mono); font-size: 8px; letter-spacing: 1.4px; color: var(--accent); }
+  .ticket-cell .tv { font-family: var(--bold); font-size: 18px; font-weight: 700; line-height: 1; margin-top: 2px; }
+  .ticket-cell .ts { font-family: var(--hand); font-size: 10px; color: var(--ink-faint); }
+
+  /* barcode */
+  .ticket-bar {
+    position: absolute; left: 18px; right: 18px; bottom: 12px;
+    display: flex; align-items: center; gap: 8px; z-index: 1;
+  }
+  .ticket-bar-code { display: flex; align-items: flex-end; gap: 1px; }
+  .ticket-bar-code span {
+    display: inline-block; background: var(--ink);
+  }
+  .ticket-bar-meta {
+    flex: 1; font-family: var(--mono); font-size: 8px;
+    letter-spacing: 1.2px; color: var(--ink-2);
+  }
+  .ticket-verified { font-family: var(--mono); font-size: 9px; color: var(--accent-2); letter-spacing: 1.2px; }
+
+  /* stub */
+  .ticket-stub {
+    flex: 1; padding: 16px 14px 14px;
+    border-left: 2px dashed rgba(42,34,28,.45);
+    position: relative;
+    background: rgba(255,255,255,.35);
+  }
+  .stub-keep { font-family: var(--mono); font-size: 8px; letter-spacing: 1.5px; color: var(--ink-2); }
+  .stub-reply { font-family: var(--bold); font-size: 20px; font-weight: 700; line-height: 1.05; margin-top: 4px; }
+  .stub-email { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+  .stub-email-icon {
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 1.4px solid var(--ink);
+    background: rgba(255,255,255,.55);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+  }
+  .stub-email-addr { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; }
+  .stub-countdown {
+    margin-top: 12px; padding: 8px 10px;
+    background: rgba(47,122,106,.14);
+    border: 1.4px solid var(--accent-2); border-radius: 7px;
+  }
+  .stub-countdown-lbl { font-family: var(--mono); font-size: 8px; letter-spacing: 1.3px; color: var(--accent-2); }
+  .stub-countdown-val { font-family: var(--mono); font-size: 22px; font-weight: 700; letter-spacing: 1px; margin-top: 2px; }
+  .stub-countdown-sub { font-family: var(--hand); font-size: 10px; color: var(--ink-faint); }
+
+  /* route */
+  .stub-route { margin-top: 14px; }
+  .stub-route-lbl { font-family: var(--mono); font-size: 8px; letter-spacing: 1.4px; color: var(--ink-2); margin-bottom: 6px; }
+  .stub-route-row {
+    display: flex; align-items: center; gap: 7px;
+    padding: 4px 0; border-top: 1px dashed var(--rule);
+  }
+  .stub-route-row:first-of-type { border-top: none; }
+  .stub-route-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .stub-route-t  { font-family: var(--mono); font-size: 8px; letter-spacing: 1px; color: var(--ink-2); width: 40px; flex-shrink: 0; }
+  .stub-route-v  { font-family: var(--bold); font-size: 12px; font-weight: 700; }
+
+  /* corner stamp */
+  .stub-circle-stamp {
+    position: absolute; bottom: 14px; right: 10px;
+    width: 56px; height: 56px; border-radius: 50%;
+    border: 2px solid var(--ink);
+    display: grid; place-items: center;
+    font-family: var(--mono); font-size: 8px;
+    letter-spacing: 1.2px; line-height: 1.1;
+    transform: rotate(-8deg);
+    background: rgba(255,255,255,.45);
+    text-align: center;
+  }
+  .stub-circle-stamp b { font-size: 16px; letter-spacing: 0; display: block; }
+
+  /* after-ticket strip */
+  .ticket-after {
+    margin-top: 16px; display: flex; flex-direction: column; gap: 8px;
+  }
+  .ticket-after-tile {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    border: 1.6px solid var(--ink); border-radius: 10px;
+    background: rgba(255,255,255,.5);
+    box-shadow: inset 0 1.2px 0 rgba(255,255,255,.55);
+    text-decoration: none; color: var(--ink);
+  }
+  .tile-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    border: 1.4px solid var(--ink);
+    background: rgba(255,255,255,.6);
+    display: grid; place-items: center;
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 1px; flex-shrink: 0;
+  }
+  .tile-text { flex: 1; }
+  .tile-text strong { font-family: var(--bold); font-size: 15px; font-weight: 700; display: block; }
+  .tile-text span  { font-family: var(--hand); font-size: 11px; color: var(--ink-2); }
+  .tile-arrow-sm {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 1.3px solid var(--ink); background: rgba(255,255,255,.6);
+    display: flex; align-items: center; justify-content: center; font-size: 11px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.65);
+  }
+
+  /* close-ticket btn */
+  .ticket-done-btn {
+    width: 100%; height: 46px; border-radius: 999px;
+    border: 1.6px solid var(--ink);
+    background: rgba(255,255,255,.55);
+    color: var(--ink);
+    font-family: var(--hand); font-size: 15px;
+    cursor: pointer; margin-top: 14px;
+    box-shadow: inset 0 1.5px 0 rgba(255,255,255,.7);
+    transition: transform .12s; position: relative; overflow: hidden;
+  }
+  .ticket-done-btn::after {
+    content: ''; position: absolute;
+    top: 3px; left: 10%; right: 10%; height: 40%;
+    background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.9), transparent 70%);
+    border-radius: 999px; pointer-events: none;
+  }
+  .ticket-done-btn:hover { transform: translateY(-1px); }
+
+  @keyframes fadeSlideIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+  .survey-step { animation: fadeSlideIn .2s ease; }
+</style>
+
+<!-- Survey modal markup -->
+<div class="survey-overlay" id="survey-overlay" role="dialog" aria-modal="true" aria-label="Apply for install">
+  <div class="survey-card" id="survey-card">
+
+    <!-- header (hidden on ticket screen) -->
+    <div class="survey-hdr" id="survey-hdr">
+      <span class="survey-step-label" id="step-label">● APPLY · 01 / 05</span>
+      <div class="survey-progress">
+        <div class="survey-progress-fill" id="progress-fill" style="width:20%"></div>
+      </div>
+      <span style="font-family:var(--mono);font-size:9px;letter-spacing:1.2px;color:var(--ink-faint);white-space:nowrap;">~ 90 SEC</span>
+      <button class="survey-close" id="survey-close" aria-label="Close">✕</button>
+    </div>
+
+    <!-- ═══ STEP VIEWS ═══ -->
+
+    <!-- Step 1: CRM -->
+    <div class="survey-body survey-step" id="step-1">
+      <div class="survey-q-label">QUESTION 01</div>
+      <div class="survey-question">What CRM are you on today?</div>
+      <div class="survey-hint">pick one — helps us prep your install spec.</div>
+      <div class="survey-pills" id="crm-pills">
+        <button class="survey-pill" data-val="HubSpot"><span class="check">✓</span> HubSpot</button>
+        <button class="survey-pill" data-val="Salesforce"><span class="check">✓</span> Salesforce</button>
+        <button class="survey-pill" data-val="GoHighLevel"><span class="check">✓</span> GoHighLevel</button>
+        <button class="survey-pill" data-val="Close"><span class="check">✓</span> Close</button>
+        <button class="survey-pill" data-val="ActiveCampaign"><span class="check">✓</span> ActiveCampaign</button>
+        <button class="survey-pill" data-val="Custom / none"><span class="check">✓</span> Custom / none</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Ad spend slider -->
+    <div class="survey-body survey-step" id="step-2" style="display:none;">
+      <div class="survey-q-label">QUESTION 02</div>
+      <div class="survey-question">What's your monthly ad spend?</div>
+      <div class="survey-hint">ballpark is fine — moves your priority up the install queue.</div>
+      <div class="survey-slider-wrap">
+        <div class="survey-slider-track">
+          <div class="survey-slider-fill" id="slider-fill" style="width:30%"></div>
+          <div class="survey-slider-thumb" id="slider-thumb" style="left:calc(30% - 13px)"></div>
+          <input type="range" class="survey-range" id="spend-slider" min="0" max="10" value="3" step="1" />
+        </div>
+        <div class="survey-slider-labels">
+          <span>$0</span><span>$100k+</span>
+        </div>
+        <div class="survey-slider-val" id="spend-val">~$5k / mo</div>
+      </div>
+      <!-- answers receipt so far -->
+      <div class="answers-receipt visible" id="receipt-1">
+        <div class="receipt-label">↳ ANSWERED</div>
+        <div class="receipt-row" id="receipt-1-txt"></div>
+      </div>
+    </div>
+
+    <!-- Step 3: Dial volume -->
+    <div class="survey-body survey-step" id="step-3" style="display:none;">
+      <div class="survey-q-label">QUESTION 03</div>
+      <div class="survey-question">How many dials per day does your team make?</div>
+      <div class="survey-hint">current state, not the goal.</div>
+      <div class="survey-pills" id="dial-pills">
+        <button class="survey-pill" data-val="No outbound yet"><span class="check">✓</span> No outbound yet</button>
+        <button class="survey-pill" data-val="Under 50 / day"><span class="check">✓</span> Under 50 / day</button>
+        <button class="survey-pill" data-val="50–200 / day"><span class="check">✓</span> 50–200 / day</button>
+        <button class="survey-pill" data-val="200+ / day"><span class="check">✓</span> 200+ / day</button>
+      </div>
+      <div class="answers-receipt visible" id="receipt-2">
+        <div class="receipt-label">↳ ANSWERED</div>
+        <div class="receipt-row" id="receipt-2-txt"></div>
+      </div>
+    </div>
+
+    <!-- Step 4: Lead source -->
+    <div class="survey-body survey-step" id="step-4" style="display:none;">
+      <div class="survey-q-label">QUESTION 04</div>
+      <div class="survey-question">What's your main lead source right now?</div>
+      <div class="survey-hint">pick your biggest channel.</div>
+      <div class="survey-pills" id="source-pills">
+        <button class="survey-pill" data-val="Meta Ads"><span class="check">✓</span> Meta Ads</button>
+        <button class="survey-pill" data-val="Google Ads"><span class="check">✓</span> Google Ads</button>
+        <button class="survey-pill" data-val="Cold outbound"><span class="check">✓</span> Cold outbound</button>
+        <button class="survey-pill" data-val="Referrals"><span class="check">✓</span> Referrals</button>
+        <button class="survey-pill" data-val="Organic / content"><span class="check">✓</span> Organic / content</button>
+        <button class="survey-pill" data-val="Other"><span class="check">✓</span> Other</button>
+      </div>
+      <div class="answers-receipt visible" id="receipt-3">
+        <div class="receipt-label">↳ ANSWERED</div>
+        <div class="receipt-row" id="receipt-3-txt"></div>
+      </div>
+    </div>
+
+    <!-- Step 5: Name + email -->
+    <div class="survey-body survey-step" id="step-5" style="display:none;">
+      <div class="survey-q-label">QUESTION 05</div>
+      <div class="survey-question">Last stop — your name + email.</div>
+      <div class="survey-hint">we reply with a personal loom inside 24 hours. no SDR funnel.</div>
+      <div class="survey-inputs">
+        <div class="survey-input-wrap">
+          <div class="survey-input-label">YOUR NAME</div>
+          <input type="text" class="survey-input" id="input-name" placeholder="J. Ross" autocomplete="name" />
+        </div>
+        <div class="survey-input-wrap">
+          <div class="survey-input-label">EMAIL</div>
+          <input type="email" class="survey-input" id="input-email" placeholder="you@company.com" autocomplete="email" />
+        </div>
+      </div>
+      <div class="answers-receipt visible" id="receipt-4" style="margin-top:14px;">
+        <div class="receipt-label">↳ YOUR ANSWERS</div>
+        <div class="receipt-row" id="receipt-4-txt"></div>
+      </div>
+    </div>
+
+    <!-- ═══ TICKET CONFIRMATION ═══ -->
+    <div id="step-ticket" style="display:none;">
+      <div class="ticket-wrap">
+        <div class="ticket-eyebrow">APPLICATION RECEIVED · YOU'RE ON THE LIST</div>
+        <div class="ticket-headline">YOU'RE ON<br>THE MANIFEST.</div>
+        <p class="ticket-sub">
+          here's your stub. we reply with a personal loom inside 24 hours —
+          no calendar tag, no SDR funnel. one of us, one video.
+        </p>
+
+        <!-- the artifact ticket -->
+        <div class="ticket">
+          <div class="ticket-main">
+            <div class="ticket-hdr">
+              <span>STACK · MISSION MANIFEST</span>
+              <span>TKT · #A-<span id="tkt-num">2826</span></span>
+            </div>
+            <div class="ticket-stamp">ADMITTED<small id="tkt-time">03·24·26 · 14:32 ET</small></div>
+            <div class="ticket-applicant">
+              <div class="tl">APPLICANT</div>
+              <div class="tn" id="tkt-name">J. ROSS</div>
+            </div>
+            <hr class="ticket-divider">
+            <div class="ticket-grid">
+              <div class="ticket-cell"><div class="tk">GATE</div><div class="tv">03</div><div class="ts">install spot, march</div></div>
+              <div class="ticket-cell"><div class="tk">BOARDING</div><div class="tv">14 days</div><div class="ts">stack goes live</div></div>
+              <div class="ticket-cell"><div class="tk">ARRIVAL</div><div class="tv">&lt;24h</div><div class="ts">loom reply window</div></div>
+              <div class="ticket-cell"><div class="tk">CABIN</div><div class="tv">OPS·01</div><div class="ts">crew on duty</div></div>
+            </div>
+            <div class="ticket-bar" style="margin-top:12px;">
+              <div class="ticket-bar-code" id="barcode"></div>
+              <div class="ticket-bar-meta" id="tkt-meta">STK · A-2826 · GATE 03</div>
+              <span class="ticket-verified">✓ VERIFIED</span>
+            </div>
+          </div>
+
+          <div class="ticket-stub">
+            <div class="stub-keep">↳ KEEP THIS STUB</div>
+            <div class="stub-reply">your reply<br>lands here.</div>
+            <div class="stub-email">
+              <div class="stub-email-icon">✉</div>
+              <span class="stub-email-addr" id="tkt-email">you@…</span>
+            </div>
+            <div class="stub-countdown">
+              <div class="stub-countdown-lbl">● ETA · LOOM REPLY</div>
+              <div class="stub-countdown-val" id="countdown">23:59:59</div>
+              <div class="stub-countdown-sub">est. delivery within 24h.</div>
+            </div>
+            <div class="stub-route">
+              <div class="stub-route-lbl">ROUTE</div>
+              <div class="stub-route-row">
+                <span class="stub-route-dot" style="background:var(--ink);border:1.5px solid var(--ink)"></span>
+                <span class="stub-route-t">now</span>
+                <span class="stub-route-v">manifest filed</span>
+              </div>
+              <div class="stub-route-row">
+                <span class="stub-route-dot" style="background:transparent;border:1.5px solid var(--accent-2)"></span>
+                <span class="stub-route-t">&lt;24h</span>
+                <span class="stub-route-v">loom reply</span>
+              </div>
+              <div class="stub-route-row">
+                <span class="stub-route-dot" style="background:transparent;border:1.5px solid var(--accent)"></span>
+                <span class="stub-route-t">&lt;72h</span>
+                <span class="stub-route-v">working call</span>
+              </div>
+              <div class="stub-route-row">
+                <span class="stub-route-dot" style="background:transparent;border:1.5px solid #7a55c2"></span>
+                <span class="stub-route-t">day 14</span>
+                <span class="stub-route-v">stack ships</span>
+              </div>
+            </div>
+            <div class="stub-circle-stamp"><b id="tkt-day">24</b><span id="tkt-mon">MAR</span><br>'26</div>
+          </div>
+        </div><!-- /ticket -->
+
+        <div class="ticket-after">
+          <a href="#" class="ticket-after-tile">
+            <div class="tile-icon" style="color:var(--accent);">▷</div>
+            <div class="tile-text"><strong>Watch it run</strong><span>2:42 · see a live install in action</span></div>
+            <div class="tile-arrow-sm">→</div>
+          </a>
+          <a href="#stack" class="ticket-after-tile" id="ticket-back-link">
+            <div class="tile-icon" style="color:var(--accent-2);">⬢</div>
+            <div class="tile-text"><strong>Read the manifesto</strong><span>6 min · what we actually build</span></div>
+            <div class="tile-arrow-sm">→</div>
+          </a>
+        </div>
+
+        <button class="ticket-done-btn" id="ticket-done">← back to home</button>
+      </div>
+    </div>
+
+    <!-- ═══ FOOTER NAV (hidden on ticket) ═══ -->
+    <div class="survey-footer" id="survey-footer">
+      <button class="survey-back hidden" id="survey-back" aria-label="Previous step">←</button>
+      <button class="survey-next" id="survey-next">NEXT → AD SPEND</button>
+    </div>
+
+  </div><!-- /survey-card -->
+</div><!-- /survey-overlay -->
+
+<script>
+  // ── survey state ──
+  const answers = { crm: null, spend: 3, dials: null, source: null, name: '', email: '' };
+  const SPEND_LABELS = ['$0 / mo','~$1k / mo','~$3k / mo','~$5k / mo','~$10k / mo','~$20k / mo','~$35k / mo','~$50k / mo','~$75k / mo','~$100k / mo','$100k+'];
+  const NEXT_LABELS  = ['NEXT → AD SPEND','NEXT → DIAL VOLUME','NEXT → LEAD SOURCE','NEXT → YOUR INFO','SUBMIT APPLICATION →'];
+  let currentStep = 1;
+  const TOTAL = 5;
+
+  // elements
+  const surveyOverlay = document.getElementById('survey-overlay');
+  const surveyHdr     = document.getElementById('survey-hdr');
+  const surveyFooter  = document.getElementById('survey-footer');
+  const progressFill  = document.getElementById('progress-fill');
+  const stepLabel     = document.getElementById('step-label');
+  const backBtn       = document.getElementById('survey-back');
+  const nextBtn       = document.getElementById('survey-next');
+
+  function openSurvey() {
+    currentStep = 1;
+    answers.crm = null; answers.spend = 3; answers.dials = null; answers.source = null; answers.name = ''; answers.email = '';
+    showStep(1);
+    surveyOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSurvey() {
+    surveyOverlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // wire all APPLY buttons
+  document.querySelectorAll('a[href="#apply"], .bottom-bar a').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      openSurvey();
+    });
+  });
+
+  document.getElementById('survey-close').addEventListener('click', closeSurvey);
+  surveyOverlay.addEventListener('click', e => { if (e.target === surveyOverlay) closeSurvey(); });
+  document.getElementById('ticket-done').addEventListener('click', closeSurvey);
+  document.getElementById('ticket-back-link').addEventListener('click', closeSurvey);
+
+  // ── step display ──
+  function showStep(n) {
+    [1,2,3,4,5].forEach(i => {
+      const el = document.getElementById('step-' + i);
+      if (el) el.style.display = i === n ? 'block' : 'none';
+    });
+    document.getElementById('step-ticket').style.display = 'none';
+    surveyHdr.style.display = '';
+    surveyFooter.style.display = '';
+
+    // update progress
+    const pct = (n / TOTAL) * 100;
+    progressFill.style.width = pct + '%';
+    stepLabel.textContent = `● APPLY · ${String(n).padStart(2,'0')} / ${String(TOTAL).padStart(2,'0')}`;
+
+    // back button
+    backBtn.classList.toggle('hidden', n === 1);
+
+    // next label
+    nextBtn.textContent = NEXT_LABELS[n - 1];
+
+    // refresh receipts
+    if (n >= 2) document.getElementById('receipt-1-txt').innerHTML = `<b>01 CRM</b> — ${answers.crm || '—'}`;
+    if (n >= 3) document.getElementById('receipt-2-txt').innerHTML = `<b>01 CRM</b> — ${answers.crm} &nbsp;·&nbsp; <b>02 SPEND</b> — ${SPEND_LABELS[answers.spend]}`;
+    if (n >= 4) document.getElementById('receipt-3-txt').innerHTML = `<b>01</b> ${answers.crm} &nbsp;·&nbsp; <b>02</b> ${SPEND_LABELS[answers.spend]} &nbsp;·&nbsp; <b>03 DIALS</b> ${answers.dials || '—'}`;
+    if (n >= 5) document.getElementById('receipt-4-txt').innerHTML = `<b>CRM</b> ${answers.crm} &nbsp;·&nbsp; <b>SPEND</b> ${SPEND_LABELS[answers.spend]} &nbsp;·&nbsp; <b>DIALS</b> ${answers.dials} &nbsp;·&nbsp; <b>SOURCE</b> ${answers.source}`;
+
+    // scroll card to top
+    document.getElementById('survey-card').scrollTop = 0;
+  }
+
+  // ── pills ──
+  function setupPills(groupId, key) {
+    document.getElementById(groupId).querySelectorAll('.survey-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.getElementById(groupId).querySelectorAll('.survey-pill').forEach(p => p.classList.remove('selected'));
+        pill.classList.add('selected');
+        answers[key] = pill.dataset.val;
+      });
+    });
+  }
+  setupPills('crm-pills', 'crm');
+  setupPills('dial-pills', 'dials');
+  setupPills('source-pills', 'source');
+
+  // ── slider ──
+  const spendSlider = document.getElementById('spend-slider');
+  const sliderFill  = document.getElementById('slider-fill');
+  const sliderThumb = document.getElementById('slider-thumb');
+  const spendVal    = document.getElementById('spend-val');
+
+  function updateSlider(v) {
+    answers.spend = parseInt(v);
+    const pct = (v / 10) * 100;
+    sliderFill.style.width  = pct + '%';
+    sliderThumb.style.left  = `calc(${pct}% - 13px)`;
+    spendVal.textContent    = SPEND_LABELS[v];
+  }
+  spendSlider.addEventListener('input', e => updateSlider(e.target.value));
+  updateSlider(3);
+
+  // ── text inputs ──
+  document.getElementById('input-name').addEventListener('input',  e => { answers.name  = e.target.value; });
+  document.getElementById('input-email').addEventListener('input', e => { answers.email = e.target.value; });
+
+  // ── navigation ──
+  backBtn.addEventListener('click', () => { if (currentStep > 1) { currentStep--; showStep(currentStep); } });
+
+  nextBtn.addEventListener('click', () => {
+    // validation
+    if (currentStep === 1 && !answers.crm)    { flashRequired('crm-pills');    return; }
+    if (currentStep === 3 && !answers.dials)  { flashRequired('dial-pills');   return; }
+    if (currentStep === 4 && !answers.source) { flashRequired('source-pills'); return; }
+    if (currentStep === 5) {
+      const name  = document.getElementById('input-name').value.trim();
+      const email = document.getElementById('input-email').value.trim();
+      if (!name || !email) { flashRequired(name ? 'input-email' : 'input-name'); return; }
+      answers.name = name; answers.email = email;
+      showTicket();
+      return;
+    }
+    currentStep++;
+    showStep(currentStep);
+  });
+
+  function flashRequired(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.outline = '2px solid var(--accent)';
+    el.style.outlineOffset = '3px';
+    setTimeout(() => { el.style.outline = ''; el.style.outlineOffset = ''; }, 900);
+  }
+
+  // ── ticket ──
+  function showTicket() {
+    [1,2,3,4,5].forEach(i => { const el = document.getElementById('step-' + i); if (el) el.style.display = 'none'; });
+    document.getElementById('step-ticket').style.display = 'block';
+    surveyHdr.style.display    = 'none';
+    surveyFooter.style.display = 'none';
+
+    // personalise
+    const num  = Math.floor(2000 + Math.random() * 8000);
+    const now  = new Date();
+    const mon  = now.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+    const day  = String(now.getDate()).padStart(2,'0');
+    const yr   = String(now.getFullYear()).slice(-2);
+    const hhmm = now.toLocaleTimeString('en-US', { hour12: false, hour:'2-digit', minute:'2-digit' });
+
+    document.getElementById('tkt-num').textContent  = num;
+    document.getElementById('tkt-time').textContent = `${mon}·${day}·${yr} · ${hhmm} ET`;
+    document.getElementById('tkt-name').textContent = answers.name.toUpperCase();
+    document.getElementById('tkt-email').textContent = answers.email.length > 16 ? answers.email.slice(0,14) + '…' : answers.email;
+    document.getElementById('tkt-meta').textContent  = `STK · A-${num} · GATE 03`;
+    document.getElementById('tkt-day').textContent   = now.getDate();
+    document.getElementById('tkt-mon').textContent   = mon;
+
+    // barcode
+    const bc = document.getElementById('barcode');
+    bc.innerHTML = '';
+    for (let i = 0; i < 48; i++) {
+      const h = [28,18,24,14,28,20,10,28][i % 8];
+      const w = i % 7 === 0 ? 3 : i % 3 === 0 ? 2 : 1;
+      const s = document.createElement('span');
+      s.style.cssText = `width:${w}px;height:${h}px;display:inline-block;background:var(--ink);`;
+      bc.appendChild(s);
+    }
+
+    // countdown (24h from now)
+    let total = 24 * 3600;
+    const cdEl = document.getElementById('countdown');
+    if (window._cdTimer) clearInterval(window._cdTimer);
+    window._cdTimer = setInterval(() => {
+      total = Math.max(0, total - 1);
+      const h = String(Math.floor(total/3600)).padStart(2,'0');
+      const m = String(Math.floor((total%3600)/60)).padStart(2,'0');
+      const s = String(total%60).padStart(2,'0');
+      cdEl.textContent = `${h}:${m}:${s}`;
+      if (total === 0) clearInterval(window._cdTimer);
+    }, 1000);
+
+    document.getElementById('survey-card').scrollTop = 0;
+  }
+
+  // ── keyboard ──
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeSurvey();
+    if (e.key === 'Enter' && surveyOverlay.classList.contains('open') && document.getElementById('step-ticket').style.display === 'none') {
+      nextBtn.click();
+    }
+  });
+
+// show desktop nav CTA on wide screens
+  const navCta = document.getElementById('nav-cta-desk');
+  const hamburger = document.getElementById('hamburger-btn');
+  const mq = window.matchMedia('(min-width: 768px)');
+  function syncNav(e) {
+    navCta.style.display = e.matches ? 'inline-flex' : 'none';
+    hamburger.style.display = e.matches ? 'none' : 'flex';
+  }
+  mq.addEventListener('change', syncNav);
+  syncNav(mq);
+
+  // drawer
+  const overlay = document.getElementById('drawer-overlay');
+  const drawer  = document.getElementById('drawer');
+  const closeBtn = document.getElementById('drawer-close');
+
+  function openDrawer() {
+    overlay.classList.add('open');
+    drawer.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDrawer() {
+    overlay.classList.remove('open');
+    drawer.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  hamburger.addEventListener('click', openDrawer);
+  overlay.addEventListener('click', closeDrawer);
+  closeBtn.addEventListener('click', closeDrawer);
+
+  // close drawer on nav link tap
+  drawer.querySelectorAll('a').forEach(a => a.addEventListener('click', closeDrawer));
+</script>
+</body>
+</html>
