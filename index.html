@@ -115,7 +115,10 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 15px; cursor: pointer;
       -webkit-tap-highlight-color: transparent;
+      outline: none;
     }
+    .nav-hamburger:focus { outline: none; }
+    .drawer-close:focus { outline: none; }
 
     /* ── DRAWER ── */
     .drawer-overlay {
@@ -243,11 +246,36 @@
       letter-spacing: -.03em; text-transform: uppercase;
     }
 
-    .hi { color: var(--accent); }
+    .hi { color: var(--accent-2); }
 
     .hero-body {
       font-family: var(--hand); font-size: 13px;
       color: var(--ink-2); line-height: 1.45; margin-top: 10px;
+    }
+
+    /* social proof strip */
+    .social-proof {
+      display: flex; align-items: center; gap: 10px;
+      margin-top: 14px; padding: 10px 12px;
+      border: 1px dashed var(--rule);
+      border-radius: 10px;
+      background: rgba(255,255,255,.35);
+    }
+    .sp-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--ink); color: var(--paper);
+      font-family: var(--bold); font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .sp-text { flex: 1; }
+    .sp-quote {
+      font-family: var(--hand); font-size: 12px;
+      color: var(--ink); line-height: 1.35; display: block;
+    }
+    .sp-who {
+      font-family: var(--mono); font-size: 9px;
+      color: var(--ink-faint); letter-spacing: 1px; display: block; margin-top: 2px;
     }
 
     /* mobile hero photo */
@@ -643,7 +671,7 @@
       <a href="#apply">FAQ <span>05</span></a>
     </nav>
     <div class="drawer-footer">
-      <div class="drawer-spot">● 3 / 3 SPOTS · MARCH</div>
+      <div class="drawer-spot">● 2 SPOTS OPEN · MARCH</div>
       <a href="#apply" class="btn dark full">APPLY FOR INSTALL →</a>
       <div style="margin-top:12px; font-family:var(--mono); font-size:9px; color:var(--ink-faint); letter-spacing:1.3px;">
         login · privacy · terms
@@ -660,6 +688,13 @@
     <p class="hero-body">
       funnels, CRM, voice, content, ad creative — one stack, installed in 14 days.
     </p>
+    <div class="social-proof">
+      <div class="sp-avatar">JR</div>
+      <div class="sp-text">
+        <span class="sp-quote">"booked 4 demos in week one — without touching the dialer"</span>
+        <span class="sp-who">— Jake R., solar co. · install client</span>
+      </div>
+    </div>
     <div class="hero-photo-mob">
       <img src="uploads/put_all_three_of_us_in_a_space_Nano_Banana_Pro_61778.png" alt="The crew" />
       <div class="photo-label">WE INSTALL · YOU WATCH IT RUN</div>
@@ -669,7 +704,7 @@
       <a href="#stack" class="btn full">WATCH IT RUN ▷</a>
     </div>
     <div class="stats-mob">
-      <div class="stat"><div class="stat-n">10</div><div class="stat-l">dials</div></div>
+      <div class="stat"><div class="stat-n">10</div><div class="stat-l">concurrent</div></div>
       <div class="stat"><div class="stat-n">1.2s</div><div class="stat-l">latency</div></div>
       <div class="stat"><div class="stat-n">14d</div><div class="stat-l">live</div></div>
     </div>
@@ -750,7 +785,7 @@
     </div>
     <div class="stack-grid">
       <div class="stack-tile">
-        <div class="tile-num" style="color:var(--accent)">01 / 04</div>
+        <div class="tile-num" style="color:var(--ink-2)">01 / 04</div>
         <div class="tile-name">CAPTURE</div>
         <div class="tile-desc">Funnels. CRM.<br>AI Dashboards.</div>
         <div class="tile-arrow">→</div>
@@ -834,7 +869,7 @@
 
 <!-- ════════ STICKY BOTTOM BAR (mobile) ════════ -->
 <div class="bottom-bar">
-  <div class="bottom-bar-spot"><b>●</b> 3 / 3 SPOTS</div>
+  <div class="bottom-bar-spot"><b>●</b> 2 SPOTS OPEN</div>
   <a href="#apply" class="btn dark" style="flex:1; text-align:center;">APPLY →</a>
 </div>
 
@@ -886,7 +921,7 @@
   }
   .survey-step-label {
     font-family: var(--mono); font-size: 9px;
-    letter-spacing: 1.8px; color: var(--accent);
+    letter-spacing: 1.8px; color: var(--ink-2);
     white-space: nowrap;
   }
   .survey-progress {
@@ -917,7 +952,7 @@
 
   .survey-q-label {
     font-family: var(--mono); font-size: 10px;
-    letter-spacing: 1.6px; color: var(--accent);
+    letter-spacing: 1.6px; color: var(--ink-2);
     margin-bottom: 8px;
   }
   .survey-question {
@@ -965,8 +1000,8 @@
   }
   .survey-slider-fill {
     position: absolute; left: 0; top: -1px; bottom: -1px;
-    background: var(--accent); border-radius: 999px;
-    opacity: .65; pointer-events: none;
+    background: var(--ink); border-radius: 999px;
+    opacity: .45; pointer-events: none;
     transition: width .08s;
   }
   .survey-slider-thumb {
@@ -1011,7 +1046,7 @@
     outline: none; transition: border-color .15s;
     width: 100%;
   }
-  .survey-input:focus { border-color: var(--accent); }
+  .survey-input:focus { border-color: var(--ink); }
   .survey-input::placeholder { color: var(--ink-faint); }
 
   /* ── ANSWERS RECEIPT ── */
@@ -1162,7 +1197,7 @@
     gap: 10px; position: relative; z-index: 1;
   }
   @media (min-width: 400px) { .ticket-grid { grid-template-columns: repeat(4,1fr); } }
-  .ticket-cell .tk { font-family: var(--mono); font-size: 8px; letter-spacing: 1.4px; color: var(--accent); }
+  .ticket-cell .tk { font-family: var(--mono); font-size: 8px; letter-spacing: 1.4px; color: var(--ink-2); }
   .ticket-cell .tv { font-family: var(--bold); font-size: 18px; font-weight: 700; line-height: 1; margin-top: 2px; }
   .ticket-cell .ts { font-family: var(--hand); font-size: 10px; color: var(--ink-faint); }
 
@@ -1459,7 +1494,7 @@
                 <span class="stub-route-v">loom reply</span>
               </div>
               <div class="stub-route-row">
-                <span class="stub-route-dot" style="background:transparent;border:1.5px solid var(--accent)"></span>
+                <span class="stub-route-dot" style="background:transparent;border:1.5px solid var(--accent-2)"></span>
                 <span class="stub-route-t">&lt;72h</span>
                 <span class="stub-route-v">working call</span>
               </div>
@@ -1475,7 +1510,7 @@
 
         <div class="ticket-after">
           <a href="#" class="ticket-after-tile">
-            <div class="tile-icon" style="color:var(--accent);">▷</div>
+            <div class="tile-icon" style="color:var(--accent-2);">▷</div>
             <div class="tile-text"><strong>Watch it run</strong><span>2:42 · see a live install in action</span></div>
             <div class="tile-arrow-sm">→</div>
           </a>
@@ -1629,7 +1664,7 @@
   function flashRequired(id) {
     const el = document.getElementById(id);
     if (!el) return;
-    el.style.outline = '2px solid var(--accent)';
+    el.style.outline = '2px solid var(--ink)';
     el.style.outlineOffset = '3px';
     setTimeout(() => { el.style.outline = ''; el.style.outlineOffset = ''; }, 900);
   }
